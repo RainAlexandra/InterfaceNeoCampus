@@ -48,4 +48,9 @@ public class SaltGen {
 		}
 		return md5;
 	}
+
+	public boolean verifPwd(String pwd, String salt, String hashValue){
+		String hashToVerify = hashValueGen(pwd, salt);
+		return (hashValue.compareTo(hashToVerify) == 0);
+	}
 }
