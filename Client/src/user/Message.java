@@ -11,7 +11,7 @@ public class Message {
     private String prenom;
     private String msg;
     private String date;
-    private String Color;
+    private String color;
     private List<String> nomETstatus = new ArrayList<>();
     private String idMessage;
 
@@ -19,7 +19,7 @@ public class Message {
         this.nom = nom;
         this.prenom = prenom;
         this.msg = msg;
-        this.Color = color;
+        this.color = color;
         this.date = date;
         this.idMessage = nom + "/" + prenom + "/" + msg + "/" + date; //on a besoin du nom prenon msg et date
         for (String nomETstatu : nomETstatus) {
@@ -30,13 +30,13 @@ public class Message {
 
     @Override
     public String toString() {
-        return msg;
+        return nom + " " + prenom + "\n" + msg + "\t" + date+"\t"+color;
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 41 * hash + Objects.hashCode(this.Color);
+        hash = 41 * hash + Objects.hashCode(this.color);
         hash = 41 * hash + Objects.hashCode(this.nomETstatus);
         hash = 41 * hash + Objects.hashCode(this.idMessage);
         return hash;
@@ -88,7 +88,7 @@ public class Message {
      * @return
      */
     public String getColor() {
-        return Color;
+        return color;
     }
 
     /**

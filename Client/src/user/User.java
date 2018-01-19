@@ -8,6 +8,7 @@ package user;
 import java.util.Set;
 import java.util.TreeSet;
 import client.socketClient.*;
+import java.sql.Timestamp;
 import java.util.HashSet;
 
 /**
@@ -57,6 +58,15 @@ public class User {
     }
 
     //------------------Getter and Setter------------------------------------
+    private String getWriteDate() {
+        long time = System.currentTimeMillis();
+        Timestamp timestamp = new Timestamp(time);
+        String date = timestamp.toString();
+        String[] noMilli = date.split("\\.");
+        return noMilli[0];
+    }
+    
+    
     public synchronized boolean isGrpRecu() {
         return grpRecu;
     }
@@ -261,7 +271,9 @@ public class User {
         return "6000/" + psd;
     }
 
-    public String createMsgAnswer(String idTicket, String msg, String date, String idGroup) {
+    public String createMsgAnswer(String idTicket, String msg, String idGroup) {
+        String date;
+        date = getWriteDate();
         this.idTicket = idTicket;
         this.idGroup = idGroup;
         return "3000/" + idTicket + "/" + msg + "/" + date;

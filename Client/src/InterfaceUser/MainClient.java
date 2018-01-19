@@ -29,7 +29,7 @@ public class MainClient {
                 if (u.isConnected()) {
                     switch (sc.nextLine()) {
                         case "sendm":
-                            u.sendRequest("");
+                            u.sendRequest(u.createMsgAnswer("2", "j'esssaie mes fonction", "INFORMATIQUE"));
                             break;
                         case "sendT":
                             u.sendRequest("");
@@ -38,10 +38,10 @@ public class MainClient {
                             u.sendRequest("");
                             break;
                         case "getM":
-                            u.sendRequest("");
+                            u.sendRequest(u.requestGetMsg(u.getIdTicket(), "INFORMATIQUE"));
                             break;
                         case "getT":
-                            u.sendRequest("");
+                            u.sendRequest(u.requestGetTicket("INFORMATIQUE"));
                             break;
                         case "g":
                             u.afficherGroupe();
@@ -50,9 +50,12 @@ public class MainClient {
                             u.afficherGroupeBox();
                             break;
                         case "m":
+                            System.out.println("Groupe : "+u.getIdGroup());
+                            System.out.println("Ticket : "+u.getIdTicket());
                             u.afficherListMsg();
                             break;
                         case "t":
+                            System.out.println("Groupe : "+u.getIdGroup());
                             u.afficherLisTicket();
                             break;
                         case "c":
