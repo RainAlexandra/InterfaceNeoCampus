@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * 
+ * class of functions that request info from the database
  * @author RainAlex
  */
 public class RequestDB {
@@ -267,8 +267,8 @@ public class RequestDB {
 	}
 
 	/**
-	 * @param userName the userName of the user whose id is to be returbed
-	 * @return the groupList that the user is a member of
+	 * @param userName the userName of the user whose id is to be returned
+	 * @return the idPerson the id of the person
 	 */
 	public int getUserIDNumber(String userName) {
 		try {
@@ -289,6 +289,10 @@ public class RequestDB {
 		}
 	}
 
+	/**
+	 * @param userName the userName of the user whose last and first names are to be returned
+	 * @return the last and first name of the the user in the form of last/first
+	 */
 	public String getUserLastFirstName(String userName) {
 		try {
 			String name = "";
@@ -308,6 +312,10 @@ public class RequestDB {
 		}
 	}
 
+	/**
+	 * @param userName
+	 * @return the destGroups a set of the groups the user can send to
+	 */
 	public Set<String> getPossDestGroups(String userName) {
 		Set<String> destGroups = new TreeSet<String>();
 		try {
@@ -334,6 +342,10 @@ public class RequestDB {
 		return destGroups;
 	}
 
+	/**
+	 * @param groupName
+	 * @return the number of members of a group
+	 */
 	private int countGroupMembers(String groupName) {
 		try {
 			state = conn.createStatement();
@@ -348,6 +360,10 @@ public class RequestDB {
 		}
 	}
 
+	/**
+	 * @param userName
+	 * @return the userType of the user (either "CAMPUS" or "SERVICE")
+	 */
 	public String getUserType(String userName) {
 		try {
 			String userType;
@@ -365,12 +381,4 @@ public class RequestDB {
 			return "null";
 		}
 	}
-	// public String[] getTicketMessages(int idTicket){
-	// 	// int i = 0;
-	// 	// String[] msgList;
-	// 	// try {
-	// 	// 	state = conn.createStatement();
-	// 	// 	String sql = "SELECT * FROM TICKET T, MESSAGE M, RECEIVE R"
-	// 	// }
-	// }
 }

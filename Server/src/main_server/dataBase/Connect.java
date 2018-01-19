@@ -3,6 +3,10 @@ package main_server.dataBase;
 import com.mysql.jdbc.CommunicationsException;
 import java.sql.*;
 
+/**
+ * class of functions for connecting to the database
+ * @author RainAlex
+ */
 public class Connect {
 
     Statement state = null;
@@ -12,20 +16,35 @@ public class Connect {
     String pwd = "";
     boolean connected = false;
 
+    /**
+     * @param port the port of the database
+     * @param dbthe database name
+     * @param user the username of the database
+     * @param pwd the pwd to the database
+     */
     public Connect(String port, String db, String user, String pwd){
-	this.url = "jdbc:mysql://localhost:" + port + "/" + db;
-	this.user = user;
-	this.pwd = pwd;
+    	this.url = "jdbc:mysql://localhost:" + port + "/" + db;
+    	this.user = user;
+    	this.pwd = pwd;
     }
     
+    /**
+     * @return true if connected to the database
+     */
     public boolean isConnected(){
-	return connected;
+	   return connected;
     }
     
+    /**
+     * @param newStat the new status of the connection (true = connected, false = disconnected)
+     */
     public void setConnected(boolean newStat){
-	connected = newStat;
+	   connected = newStat;
     }
     
+    /**
+     * @return conn the Connection entity
+     */
     public Connection connectToDB() throws CommunicationsException {
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -54,6 +73,10 @@ public class Connect {
 
     }
 
+    /**
+     * @param conn
+     * @return initializes the usernames, salts, and hash values of the users in the sql file if not already done
+     */
     private void initUsernamesSaltAndHash(Connection conn) {
         try {
             SaltGen sg = new SaltGen();
@@ -82,6 +105,10 @@ public class Connect {
         }
     }
 
+    /**
+     * disconnects
+     * @param conn
+     */
     public void disconnect(Connection conn) throws SQLException {
         conn.close();
     }

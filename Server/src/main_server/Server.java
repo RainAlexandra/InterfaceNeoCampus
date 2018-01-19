@@ -15,6 +15,12 @@ public class Server {
     private RequestDB reqDB = null;
     private UpdateDB updDB = null;
 
+    /**
+     * @param port the port of the database
+     * @param dbthe database name
+     * @param user the username of the database
+     * @param pwd the pwd to the database
+     */
     public Server(String port, String db, String user, String pwd) {
         connect = new Connect(port, db, user, pwd);
 	try {
@@ -27,13 +33,13 @@ public class Server {
     }
 
     public Connect getConnect(){
-	return connect;
+	   return connect;
     }
     
     /**
      * @param idTicket
      * @param contenue
-     * @return
+     * @return the set of the members of the directed group of the message
      */
     public Set<String> updateTicket(String idClient, String idTicket, String contenue) {
         return updDB.addMsg(idClient, Integer.parseInt(idTicket), contenue);
@@ -42,7 +48,7 @@ public class Server {
     /**
      * @param id
      * @param pwd
-     * @return
+     * @return true if the user exists
      */
     public boolean userIsExist(String id, String pwd) {
         boolean connect = reqDB.userExists(id, pwd);
@@ -52,7 +58,7 @@ public class Server {
 
     /**
      * @param idClient
-     * @return
+     * @return the list of groups concerning a user
      */
     public String[] getListOfGroup(String idClient) {
         List<String> groupList = reqDB.getGroups(idClient);
@@ -69,7 +75,7 @@ public class Server {
     /**
      * @param idGroup
      * @param idClient
-     * @return
+     * @return the list of tickets concerning a group depending on the user that is logged in
      */
     public String[] getListOfTicket(String idClient, String idGroup) {
         System.out.println("idClient : " + idClient + "  idGroup : " + idGroup);
@@ -84,8 +90,9 @@ public class Server {
     }
 
     /**
+     * @param idClient
      * @param idTicket
-     * @return
+     * @return the list of messages along with the statuses of each user concerned by the message
      */
     public String[] getListOfMsg(String idClient, String idTicket) {
         ArrayList<String> listOfMsg = reqDB.getTicketMessages(Integer.parseInt(idTicket));
@@ -100,6 +107,13 @@ public class Server {
         return msg;
     }
 
+    /**
+     * @param userName
+     * @param idGroup
+     * @param title
+     * @param contenu
+     * @return the id of the ticket in string form
+     */
     public String createTicket(String userName, String idGroup, String title, String contenu) {
         int idTicket;
         idTicket = updDB.addTicket(title, userName, idGroup);
@@ -111,6 +125,10 @@ public class Server {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    /**
+     * @param idClient
+     * @return the array of groups a user can send to
+     */
     public String[] getListOfGroupBox(String idClient) {
         Set<String> grpB = reqDB.getPossDestGroups(idClient);
         String[] groupBox = new String[grpB.size() + 1];
@@ -122,6 +140,10 @@ public class Server {
         return groupBox;
     }
 
+    /**
+     * @param idClient
+     * @return the last and first name of a user in array form
+     */
     public String[] getLastAndFirstName(String idClient) {
         String lastAndFirst = reqDB.getUserLastFirstName(idClient);
         String[] parts = lastAndFirst.split("/");

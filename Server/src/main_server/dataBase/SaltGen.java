@@ -6,7 +6,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * 
+ * class of functions the generate a final salt and hash value
  * @author RainAlex
  */
 public class SaltGen {
@@ -49,6 +49,12 @@ public class SaltGen {
 		return md5;
 	}
 
+	/**
+	 * @param pwd
+	 * @param salt
+	 * @param hashValue
+	 * @return true if the hashed value of pwd + salt equals hashValue
+	 */
 	public boolean verifPwd(String pwd, String salt, String hashValue){
 		String hashToVerify = hashValueGen(pwd, salt);
 		return (hashValue.compareTo(hashToVerify) == 0);
