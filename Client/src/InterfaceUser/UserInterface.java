@@ -1,13 +1,11 @@
-package userInterface;
+package InterfaceUser;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import user.Group;
 import user.User;
@@ -23,7 +21,7 @@ public class UserInterface extends javax.swing.JFrame {
      * Creates new form UserInterface
      */
     public UserInterface() {
-	user = new User();
+	user = new User(this);
 	initComponents();
     }
 

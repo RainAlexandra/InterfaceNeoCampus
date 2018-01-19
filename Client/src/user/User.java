@@ -5,11 +5,13 @@
  */
 package user;
 
+import InterfaceUser.UserInterface;
 import java.util.Set;
 import java.util.TreeSet;
 import client.socketClient.*;
 import java.sql.Timestamp;
 import java.util.HashSet;
+import java.util.concurrent.Semaphore;
 
 /**
  *
@@ -36,6 +38,8 @@ public class User {
     private String idGroup = ""; //l'id du group selectionné
     private String idTicket = ""; //id du ticket selectionné
     private String titleOfTicket = "";
+    private String idGroupNotif = "";
+    private String idTicketNotif = "";
 
     //des ensemble contenat les groupe les tickets et les message en fonction d'une selection 
     private Set<Group> listOfGroups = new TreeSet<>();
@@ -45,7 +49,12 @@ public class User {
 
     private ClientConnexion conn = null;
 
-    public User() {
+    private Semaphore sem;
+    private UserInterface ui;
+    
+    public User(UserInterface ui) {
+        sem = new Semaphore(1, true);
+        this.ui = ui;
     }
 
     public void runConnSocket(int port, String host) {
@@ -66,6 +75,13 @@ public class User {
         return noMilli[0];
     }
     
+    public void setIdGroupNotif(String grpN){
+        this.idGroupNotif = grpN;
+    }
+    
+    public void setIdTicketNotif(String idTicketNotif) {
+        this.idTicketNotif = idTicketNotif;
+    }
     
     public synchronized boolean isGrpRecu() {
         return grpRecu;
@@ -325,4 +341,29 @@ public class User {
         ticketRecu = true;
     }
     
+    
+    //cette fonction est applée que si le user est connecter
+    public void updateNotification() {
+        Thread update = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isConnect) { 
+                    if (notifHere) {
+                        if(idGroup.compareTo(idGroupNotif) == 0) {
+                            if(idTicket.compareTo(idTicketNotif) == 0) { //je met à jour les mssage
+                                //demande de mis à jour des message
+                                sendRequest(requestGetMsg(idTicket, idGroup));
+                            }else { //je demande les tickets 
+                                sendRequest(requestGetTicket(idGroup));
+                            }
+                        }else {
+                            sendRequest(requestGetGroup());
+                        }
+                    }
+                }
+            }
+        });
+        
+        update.start();
+    }
 }
