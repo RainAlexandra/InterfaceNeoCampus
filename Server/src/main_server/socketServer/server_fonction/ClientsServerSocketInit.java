@@ -227,13 +227,13 @@ public class ClientsServerSocketInit {
             List<String> userConn = (List<String>) user[0];
             List<ObjectOutputStream> writer = (List<ObjectOutputStream>) user[1];
             //main_server.modifyStatOfUserId(userConn); //met à jour la base de donnée
-            writer.forEach((cl) -> {
+            for (ObjectOutputStream cl : writer) {
                 try {
                     cl.writeObject(notification);
                 } catch (IOException ex) {
                     Logger.getLogger(ClientsServerSocketInit.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            });
+            }
         });
         envoyerNotification.start();
     }
@@ -248,12 +248,12 @@ public class ClientsServerSocketInit {
     }
 
     /**
-     * @param idClient
      * @param msg
      * @return
      */
     public String[] getListOfMsg(String idClient, Msg msg) {
         // TODO Auto-generated method stub
+        System.out.println("id Ticket : "+msg.getIdTicket());
         return main_server.getListOfMsg(idClient, msg.getIdTicket());
     }
 
