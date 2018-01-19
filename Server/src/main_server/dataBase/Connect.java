@@ -1,18 +1,34 @@
 package main_server.dataBase;
 
+import com.mysql.jdbc.CommunicationsException;
 import java.sql.*;
 
 public class Connect {
 
     Statement state = null;
-    String portDB="3306";
-    public Connection connectToDB() {
+    String port= "";
+    String url = "";
+    String user = "";
+    String pwd = "";
+    boolean connected = false;
+
+    public Connect(String port, String db, String user, String pwd){
+	this.url = "jdbc:mysql://localhost:" + port + "/" + db;
+	this.user = user;
+	this.pwd = pwd;
+    }
+    
+    public boolean isConnected(){
+	return connected;
+    }
+    
+    public void setConnected(boolean newStat){
+	connected = newStat;
+    }
+    
+    public Connection connectToDB() throws CommunicationsException {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            
-            String url = "jdbc:mysql://localhost:"+portDB+"/neocampus";
-            String user = "root";
-            String pwd = "Angelodelagx97";
 
             Connection conn = DriverManager.getConnection(url, user, pwd);
 
@@ -25,8 +41,13 @@ public class Connect {
                 state.executeUpdate(sql);
                 initUsernamesSaltAndHash(conn);
             }
+            connected = true;
             return conn;
-        } catch (Exception e) {
+	} catch (CommunicationsException ce){
+	    System.err.println("Impossible de se connecter a la base de donnees avec ces identifiants");
+	    ce.printStackTrace();
+            return null;
+	} catch (Exception e){
             e.printStackTrace();
             return null;
         }

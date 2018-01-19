@@ -5,9 +5,17 @@ import java.security.SecureRandom;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * 
+ * @author RainAlex
+ */
 public class SaltGen {
 	private static final int SIZE = 16;
 
+	/**
+	 * Generates a random salt value
+	 * @return the salt randomly generated
+	 */
 	public String saltValueGen(){
 		SecureRandom random = new SecureRandom();
 		byte[] saltBytes = new byte[SIZE]; // salt len = size * 2
@@ -19,6 +27,10 @@ public class SaltGen {
 		return salt;
 	}
 
+	/**
+	 * hashes the concatenation of pwd and salt
+	 * @return the hashVaule of the concatenation
+	 */
 	public String hashValueGen(String pwd, String salt){
 		String md5 = "";
 		String pwdAndSalt = pwd + salt;
@@ -35,10 +47,5 @@ public class SaltGen {
 			e.printStackTrace();
 		}
 		return md5;
-	}
-
-	public boolean verifPwd(String pwd, String salt, String hashValue){
-		String hashToVerify = hashValueGen(pwd, salt);
-		return (hashValue.compareTo(hashToVerify) == 0);
 	}
 }

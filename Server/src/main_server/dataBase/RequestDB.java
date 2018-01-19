@@ -3,7 +3,11 @@ package main_server.dataBase;
 import java.sql.*;
 import java.util.*;
 
-public class RequestDB implements DBRequestInterface {
+/**
+ * 
+ * @author RainAlex
+ */
+public class RequestDB {
 
     Statement state = null;
     Connection conn = null;
@@ -12,6 +16,10 @@ public class RequestDB implements DBRequestInterface {
         this.conn = conn;
     }
 
+    /**
+     *
+     * 
+     */
     public ArrayList<String> getGroups(String userName) {
         ArrayList<String> groupList = new ArrayList<String>();
         try {

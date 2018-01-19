@@ -1,5 +1,7 @@
 package main_server;
 
+import com.mysql.jdbc.CommunicationsException;
+import java.io.ObjectOutputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,16 +11,25 @@ import main_server.dataBase.*;
 public class Server {
 
     private Connection conn = null;
+    private Connect connect = null;
     private RequestDB reqDB = null;
     private UpdateDB updDB = null;
 
-    public Server() {
-        Connect connect = new Connect();
-        this.conn = connect.connectToDB();
+    public Server(String port, String db, String user, String pwd) {
+        connect = new Connect(port, db, user, pwd);
+	try {
+	    this.conn = connect.connectToDB();
+	} catch (CommunicationsException ce){
+	    connect.setConnected(false);
+	}
         this.reqDB = new RequestDB(conn);
         this.updDB = new UpdateDB(conn);
     }
 
+    public Connect getConnect(){
+	return connect;
+    }
+    
     /**
      * @param idTicket
      * @param contenue
@@ -84,7 +95,6 @@ public class Server {
         msg[0] = "2000";
         int i = 1;
         for (String t : listOfMsg) {
-            System.out.println("msg : " +t);
             msg[i++] = t;
         }
         return msg;
