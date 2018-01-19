@@ -8,6 +8,7 @@ package user;
 import java.util.Set;
 import java.util.TreeSet;
 import client.socketClient.*;
+import java.util.HashSet;
 
 /**
  *
@@ -15,7 +16,7 @@ import client.socketClient.*;
  */
 public class User {
 
-    private String psd;
+    //ensembles des notification 
     private boolean socketOk = false;
     private boolean isConnect = false;
     private boolean conn_here = false; //renseigne l'arrivé d'une connexion
@@ -24,29 +25,38 @@ public class User {
     private boolean msgRecu = false;
     private boolean grpRecu = false;
     private boolean answarMsg = false;
-
     private boolean notifCreeTicketRecu = false;
-    private String idGroup = "";
-    private String idTicket = "";
-    private String titleOfTicket = "";
 
-    private Set<Group> listOfGroups = new TreeSet<>();
-    private Set<Group> listOfGroupsBox = new TreeSet<>();
-    private ClientConnexion conn = null;
+    //information du user
+    private String psd; // 
     private String nom;
     private String prenom;
-    //private String host;
-    //private int port;
-    
+
+    private String idGroup = ""; //l'id du group selectionné
+    private String idTicket = ""; //id du ticket selectionné
+    private String titleOfTicket = "";
+
+    //des ensemble contenat les groupe les tickets et les message en fonction d'une selection 
+    private Set<Group> listOfGroups = new TreeSet<>();
+    private Set<Group> listOfGroupsBox = new TreeSet<>();
+    private Set<Ticket> listOfTickets = new HashSet<>();
+    private Set<Message> listOfMsg = new HashSet<>();
+
+    private ClientConnexion conn = null;
+
     public User() {
-        //conn = new ClientConnexion(host, port, this); //a discuter
     }
 
-   
     public void runConnSocket(int port, String host) {
         conn = new ClientConnexion(host, port, this);
     }
 
+    @Override
+    public String toString() {
+        return nom + " " + prenom;
+    }
+
+    //------------------Getter and Setter------------------------------------
     public synchronized boolean isGrpRecu() {
         return grpRecu;
     }
@@ -79,12 +89,6 @@ public class User {
         return listOfGroupsBox;
     }
 
-    @Override
-    public String toString() {
-        return nom + " " + prenom;
-    }
-
-    //------------------Getter and Setter------------------------------------
     public synchronized void setNotifCreeTicketRecu(boolean recu) {
         this.notifCreeTicketRecu = recu;
     }
@@ -132,11 +136,6 @@ public class User {
     public synchronized void setConnHere(boolean conn) {
         this.conn_here = conn;
     }
-//---------------------fonction --------------------------
-
-    public synchronized void runRecvePassive() {
-        conn.recve();
-    }
 
     /**
      *
@@ -152,99 +151,6 @@ public class User {
 
     public synchronized boolean isNotifHere() {
         return notifHere;
-    }
-
-    public synchronized void addListOfMessages(Set<Message> listOfMsg) {
-        //System.out.println("idTicket : "+idTicket+"  idGroup : "+idGroup
-        //+"is null : "+listOfGroups.isEmpty());
-        boolean com = false;
-        for (Group g : listOfGroups) {
-            com = g.compare(idGroup);
-            if (com) {
-                for (Ticket t : g.getGroupTicket()) {
-                    System.out.println("idTicket in :" + idTicket
-                            + " IdTicket to compare " + t.getIdTicket());
-                    if (t.getIdTicket().equals(idTicket)) {
-                        System.out.println("Le ticket : " + t.getTitle());
-                        t.setListOfMsg(listOfMsg);
-                        msgRecu = true;
-                        return;
-                    }
-                }
-            }
-        }
-
-        msgRecu = true;
-    }
-
-    public boolean login(String mdp, String psd) {
-        this.psd = psd;
-        sendRequest(createLoginMsg(mdp));
-        conn.receveBis();
-        System.out.println("isConnected : " + isConnect);
-        return isConnect;
-    }
-
-    public synchronized void sendRequest(String request) {
-        conn.send(request);
-    }
-
-    public synchronized String requestGetMsg(String idTicket, String idGroup) {
-        this.idTicket = idTicket;
-        this.idGroup = idGroup;
-        return "5000/" + idTicket;
-    }
-
-    public synchronized String requestGetTicket(String idGroup) {
-        this.idGroup = idGroup;
-        return "4000/" + idGroup;
-    }
-
-    public synchronized String requestGetGroup() {
-        return "6000/" + psd;
-    }
-
-    public synchronized String createMsgAnswer(String idTicket, String msg, String date, String idGroup) {
-        this.idTicket = idTicket;
-        this.idGroup = idGroup;
-        return "3000/" + idTicket + "/" + msg + "/" + date;
-    }
-
-    public synchronized String createTicket(String idGroupe, String titleOfTicket, String contenue) {
-        this.idGroup = idGroupe;
-        this.titleOfTicket = titleOfTicket;
-        return "2000/" + idGroupe + "/" + titleOfTicket + "/" + contenue;
-    }
-
-    private synchronized String createLoginMsg(String mdp) {
-        return "1000/" + psd + "/" + mdp;
-    }
-
-    public synchronized void disconnect() {
-        conn.close();
-        conn.setCloseConnecion(false);
-    }
-
-    //testes
-    public synchronized boolean afficherGroupe() {
-        for (Group g : listOfGroups) {
-            System.out.println("nom groupe : " + g.getGroupName()
-                    + "     nd msg non lu : " + g.getNbUnreadMsg());
-        }
-
-        return true;
-    }
-
-    /**
-     * @return
-     */
-    public synchronized void listOfGroup(String[] group) {
-        Set<Group> listGpr = new TreeSet<>();
-        String[] grp = null;
-        for (int i = 1; i < group.length; i++) {
-            grp = group[i].split("/");
-            listOfGroups.add(new Group(grp[0], Integer.parseInt(grp[1])));
-        }
     }
 
     public synchronized boolean isConnected() {
@@ -287,105 +193,124 @@ public class User {
         this.answarMsg = b;
     }
 
-    public synchronized void addTicket(String idTicket, String title, String idGroup) {
-        for (Group g : listOfGroups) {
-            if (g.getGroupName().equals(idGroup)) {
-                g.getGroupTicket().add(new Ticket(idTicket, title, 0));
-                break;
-            }
-        }
-
-        notifCreeTicketRecu = true;
+//---------------------fonction --------------------------
+    public void runRecvePassive() {
+        conn.recve();
     }
 
-    //recupere la liste des ticket et les retourne en tableau de String
-    public synchronized String[] listOfTicketString() {
-        String[] listOfTicket = null;
-        int i = 0;
-        for (Group g : listOfGroups) {
-            if (g.getGroupName().equals(idGroup)) {
-                listOfTicket = new String[g.getGroupTicket().size()];
-                for (Ticket t : g.getGroupTicket()) {
-                    if (t.getNbUnreadMsg() != 0) {
-                        listOfTicket[i++] = "[" + t.getIdTicket() + "]" + t.getTitle()
-                                + "(" + t.getNbUnreadMsg() + ")";
-                    } else {
-                        listOfTicket[i++] = "[" + t.getIdTicket() + "]" + t.getTitle();
-                    }
-                }
-                return listOfTicket;
-            }
-        }
-        return listOfTicket;
+    public synchronized void addListOfMessages(Set<Message> listOfMsg) {
+        this.listOfMsg = listOfMsg;
+        msgRecu = true;
     }
 
-    public synchronized String[] listOfGroupString() {
-        String[] listOfGroup = new String[listOfGroups.size()];;
-        int i = 0;
-        for (Group g : listOfGroups) {
-            if (g.getNbUnreadMsg() != 0) {
-                listOfGroup[i++] = g.getGroupName() + "(" + g.getNbUnreadMsg() + ")";
-            } else {
-                listOfGroup[i++] = g.getGroupName();
-            }
+    // fonction d'envoie du login et de reception de reponse de connexion 
+    public boolean login(String mdp, String psd) {
+        this.psd = psd;
+        sendRequest(createLoginMsg(mdp));
+        conn.receveBis(); // à la sortie de cette fonction on sait si on est connecté ou pas 
+        return isConnect;
+    }
+
+    //testes
+    public void afficherGroupe() {
+        listOfGroups.forEach((g) -> {
+            System.out.println("nom groupe : " + g.getGroupName()
+                    + "     nd msg non lu : " + g.getNbUnreadMsg());
+        });
+    }
+
+    /**
+     * @param group
+     */
+    public void listOfGroup(String[] group) {
+        String[] grp;
+        for (int i = 1; i < group.length; i++) {
+            grp = group[i].split("/");
+            listOfGroups.add(new Group(grp[0], Integer.parseInt(grp[1])));
         }
-        return listOfGroup;
+        grpRecu = true;
     }
 
     public synchronized void listOfGroupBox(String[] groupBox) {
-        Set<Group> listGpr = new TreeSet<>();
-        String[] grp = null;
+        String[] grp;
         for (int i = 1; i < groupBox.length; i++) {
             grp = groupBox[i].split("/");
             listOfGroupsBox.add(new Group(grp[0], 0));
         }
     }
+    // ensemble des requets et commende d'envoie 
+    //--------------------------------------------------------------------------
 
-    public synchronized void afficherLisTicket(String idGrp) {
-        for (Group g : listOfGroups) {
-            if (g.getGroupName().equals(idGrp)) {
-                for (Ticket t : g.getGroupTicket()) {
-                    System.out.println("idTicket : " + t.getIdTicket()
-                            + "\ntitre ticket : " + t.getTitle() + "\nnb msg in : " + t.getNbUnreadMsg());
-                }
-                break;
-            }
-        }
+    //utiliser pour envoyer une requete
+    public void sendRequest(String request) {
+        conn.send(request);
     }
 
-    public synchronized void afficherListMsg(String idGrp, String idTicket) {
-        for (Group g : listOfGroups) {
-            if (g.getGroupName().equals(idGrp)) {
-                for (Ticket t : g.getGroupTicket()) {
-                    if (t.getIdTicket().equals(idTicket)) {
-                        for (Message m : t.getListOfMsg()) {
-                            System.out.println(m.toString());
-                        }
-                        break;
-                    }
-                }
-            }
-        }
+    public String requestGetMsg(String idTicket, String idGroup) {
+        this.idTicket = idTicket;
+        this.idGroup = idGroup;
+        return "5000/" + idTicket;
+    }
+
+    public String requestGetTicket(String idGroup) {
+        this.idGroup = idGroup;
+        return "4000/" + idGroup;
+    }
+
+    public String requestGetGroup() {
+        return "6000/" + psd;
+    }
+
+    public String createMsgAnswer(String idTicket, String msg, String date, String idGroup) {
+        this.idTicket = idTicket;
+        this.idGroup = idGroup;
+        return "3000/" + idTicket + "/" + msg + "/" + date;
+    }
+
+    public String createTicket(String idGroupe, String titleOfTicket, String contenue) {
+        this.idGroup = idGroupe;
+        this.titleOfTicket = titleOfTicket;
+        return "2000/" + idGroupe + "/" + titleOfTicket + "/" + contenue;
+    }
+
+    private String createLoginMsg(String mdp) {
+        return "1000/" + psd + "/" + mdp;
+    }
+
+    public void disconnect() {
+        conn.close();
+        conn.setCloseConnecion(false);
+    }
+//------------------------------------------------------------------------------
+
+    public synchronized void addTicket(String idTicket, String title, String idGroup) {
+        listOfTickets.add(new Ticket(idTicket, title, 0));
+        notifCreeTicketRecu = true;
+    }
+
+    public synchronized void afficherLisTicket() {
+        listOfTickets.forEach((t) -> {
+            System.out.println("idTicket : " + t.getIdTicket()
+                    + "\ntitre ticket : " + t.getTitle() + "\nnb msg in : " + t.getNbUnreadMsg());
+        });
+    }
+
+    public synchronized void afficherListMsg() {
+        listOfMsg.forEach((m) -> {
+            System.out.println(m.toString());
+        });
     }
 
     public synchronized void afficherGroupeBox() {
-        for (Group g : listOfGroupsBox) {
+        listOfGroupsBox.forEach((g) -> {
             System.out.println("nom groupe : " + g.getGroupName()
                     + "     nd msg non lu : " + g.getNbUnreadMsg());
-        }
+        });
     }
 
     public synchronized void addListOfTickets(Set<Ticket> listOfTicket) {
-        for (Group g : listOfGroups) { //mise à jour des ticket dans le groupe
-            if (g.getGroupName().equals(idGroup)) {
-                g.setGroupTickets(listOfTicket);
-                ticketRecu = true;
-                //ui.loadTickets(new DefaultMutableTreeNode(g));
-                System.out.println("is null ticket : " + g.getGroupTicket().isEmpty());
-                System.out.println(g.getGroupTicket());
-                break;
-            }
-        }
+        this.listOfTickets = listOfTicket;
+        ticketRecu = true;
     }
-
+    
 }

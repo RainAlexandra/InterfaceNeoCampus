@@ -75,7 +75,7 @@ public class ClientConnexion {
                         switch (reponse[0].charAt(1)) {
                             case '0':
                                 user.listOfGroup(reponse);
-                                user.afficherGroupe();
+                                //user.afficherGroupe();
                                 break;
                             case '1':
                                 user.listOfGroupBox(reponse);
@@ -83,7 +83,7 @@ public class ClientConnexion {
                             default:
                                 user.setNom(reponse[1]);
                                 user.setPrenom(reponse[2]);
-                                System.out.println(user.getNom() + " " + user.getPrenom());
+                                //System.out.println(user.getNom() + " " + user.getPrenom());
                                 break;
                         }
                     }
@@ -122,16 +122,19 @@ public class ClientConnexion {
                                     }
                                     break;
                                 case 4:
-                                    if (reponse[0].charAt(1) == '0') {
-                                        user.listOfGroup(reponse);
-                                    } else if (reponse[0].charAt(1) == '2') {
-                                        user.listOfGroupBox(reponse);
-                                    } else {
-                                        user.setGrpRecu(true);
-                                    }
+                            switch (reponse[0].charAt(1)) {
+                                case '0':
+                                    user.listOfGroup(reponse);
+                                    break;
+                                case '2':
+                                    user.listOfGroupBox(reponse);
+                                    break;
+                                default:
+                                    user.setGrpRecu(true);
+                                    break;
+                            }
                                     break;
                                 case 1:
-                                    System.out.println("notification recu"); // ici on declanche une fonction de mis à jour
                                     notification = reponse;
                                     user.setNotifHere(true);
                                     break;
@@ -139,7 +142,6 @@ public class ClientConnexion {
                                     user.addListOfMessages(getListOfMsg(reponse));
                                     break;
                                 case 3:
-                                    System.out.println("is empy listOfGroup :" + user.getListOfGroup().isEmpty());
                                     user.addListOfTickets(listOfTicket(reponse));
                                     break;
                                 case 0:// traitement de l'erreur et demander ici
