@@ -1,7 +1,17 @@
 package main_server.dataBase;
 
+
+/**
+ * class of functions that generate a username and a password for a 
+ * person based on first and last name and id
+ * @author RainAlex
+ */
 public class UsernameAndPassGen {
 
+	/**
+	 * @param id
+	 * @return the sum of the digits in an id
+	 */
 	public static int sumID(String id){
 		int sum = 0;
 		for (int i = 0; i < id.length(); i++){
@@ -10,6 +20,13 @@ public class UsernameAndPassGen {
 		return sum;
 	}
 
+	/**
+	 * @param lastName
+	 * @param firstName
+	 * @param id
+	 * @return the userName of the person based on lastName firstName and id
+	 * if name = Turner, Drew and id = 1001 userName = tr1001dw
+	 */
 	public static String userNameGen(String lastName, String firstName, int id){
 		String userName = "";
 		String last = lastName.toLowerCase();
@@ -22,6 +39,13 @@ public class UsernameAndPassGen {
 		return userName;
 	}
 
+	/**
+	 * @param lastName
+	 * @param firstName
+	 * @param id
+	 * @return the pwd of the person based on lastName, firstName and id
+	 * if name = Turner, Drew and id = 1001 pwd = t1r1d1w142
+	 */
 	public static String passWordGen(String lastName, String firstName, int id){
 		String pwd = "";
 		int sumOcc = 0;
@@ -45,6 +69,11 @@ public class UsernameAndPassGen {
 		return pwd;
 	}
 
+	/**
+	 * @param line
+	 * @param character
+	 * @return the number of occurrences of a character in a line
+	 */
 	public static int countOcc(String line, char character){
 		return (line.length() - line.replace(Character.toString(character), "").length());
 	}
