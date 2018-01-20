@@ -99,7 +99,7 @@ public class ClientServerCommunication implements Runnable {
         boolean closeConnexion = false;
         switch (msg.getTypeOfmsg()) {
             case CREATE_TICKET:
-                System.out.println("titre du ticket :"+msg.getTitle());
+                System.out.println("titre du ticket :" + msg.getTitle());
                 toSend = server.createTicket(idClient, msg);
                 break;
             case ANSWAR: // repondre à un ticket

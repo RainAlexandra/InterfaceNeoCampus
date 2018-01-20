@@ -7,8 +7,18 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import user.Group;
+import user.Ticket;
 import user.User;
+
 /**
  *
  * @author RainAlex
@@ -16,13 +26,16 @@ import user.User;
 public class UserInterface extends javax.swing.JFrame {
 
     private User user;
-    
+    private boolean sockOk = false;
+    private DefaultTreeModel groupMmodel;
+    private String root = "Racine";
+    DefaultMutableTreeNode racine;
     /**
      * Creates new form UserInterface
      */
     public UserInterface() {
-	user = new User(this);
-	initComponents();
+        user = new User(this);
+        initComponents();
     }
 
     /**
@@ -45,7 +58,7 @@ public class UserInterface extends javax.swing.JFrame {
         treeView = new javax.swing.JPanel();
         composeBtn = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-        grpAndTickets = new javax.swing.JTree();
+        arbre = new javax.swing.JTree();
         logoutBtn = new javax.swing.JLabel();
         lastFirstLabel = new javax.swing.JLabel();
         mainContent = new javax.swing.JPanel();
@@ -160,9 +173,9 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
 
-        grpAndTickets.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        grpAndTickets.setRootVisible(false);
-        jScrollPane2.setViewportView(grpAndTickets);
+        arbre.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        arbre.setRootVisible(false);
+        jScrollPane2.setViewportView(arbre);
 
         logoutBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/logoutLogo.png"))); // NOI18N
         logoutBtn.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -403,20 +416,101 @@ public class UserInterface extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    public TreeNode ajouterGroup(Group group) {
+        DefaultMutableTreeNode g = new DefaultMutableTreeNode(group.getGroupName());
+        return g;
+    }
+
+    //ajoute un ensemble de ticket dans un group selectionner
+    public void ajouterTicketDansArbre(Set<Ticket> listOftickes) {
+        TreePath tp = arbre.getSelectionPath();
+        if (tp != null) {
+            DefaultMutableTreeNode parent
+                    = (DefaultMutableTreeNode) tp.getLastPathComponent();
+            parent.removeAllChildren();
+            if (parent != null) {
+                for (Ticket t : listOftickes) {
+                    DefaultMutableTreeNode newTicketNode = creerNodeTicket(t, parent);
+                    groupMmodel.insertNodeInto(newTicketNode, parent, parent.getChildCount());
+                    arbre.scrollPathToVisible(new TreePath(newTicketNode.getPath()));
+                }
+                groupMmodel.reload();
+                arbre.expandPath(tp);
+            }
+        }
+    }
+
+    //les tickets ne peuvent pas avoir des enfants 
+    private DefaultMutableTreeNode creerNodeTicket(Ticket ticket, DefaultMutableTreeNode parent) {
+        DefaultMutableTreeNode newTicket
+                = new DefaultMutableTreeNode(ticket.getIdTicket()
+                        + "-" + ticket.getTitle(), false);
+        return newTicket;
+    }
+
+    private void creerArbre() {
+        racine = new DefaultMutableTreeNode("Racine");
+        Set<Group> group = user.getListOfGroup();
+        //Nous allons ajouter des branches et des feuilles à notre racine
+
+        for (Group g : group) {
+            DefaultMutableTreeNode newGroup;
+            if (g.getNbUnreadMsg() > 0) {
+                newGroup = new DefaultMutableTreeNode(g.getGroupName()
+                        + "-(" + g.getNbUnreadMsg() + ")");
+            } else {
+                newGroup = new DefaultMutableTreeNode(g.getGroupName() + "-");
+            }
+            racine.add(newGroup);
+        }
+
+        groupMmodel = new DefaultTreeModel(racine, true);
+        arbre.addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent event) {
+                DefaultMutableTreeNode nodeSelected;
+                if ((nodeSelected = (DefaultMutableTreeNode) arbre.getLastSelectedPathComponent()) != null) { //j'envoie un requet de recuperation 
+                    String[] spl;
+                    if (nodeSelected.getParent().toString().compareTo(root) == 0) {
+                        spl = nodeSelected.toString().split("-");
+                        user.sendRequest(user.requestGetTicket(spl[0])); // de tickets
+                    } else { //action pour la selection de ticket
+                        spl = nodeSelected.toString().split("-");
+                        String [] spl1 = nodeSelected.getParent().toString().split("-");
+                        user.sendRequest(user.requestGetMsg(spl[0], spl1[0]));
+                        //on modifie le nombre de mesg lu;
+                        int i = 0;
+                        if ((i=user.modifierNbGrpNonLu(user.calculeNbMsgNonLu())) > 0) {
+                            nodeSelected.setUserObject(spl1+"-("+i+")");
+                            groupMmodel.reload();
+                        }
+                    }
+                }
+            }
+        });
+        arbre.setModel(groupMmodel);
+    }
+
+    public void afficherMsgInterface() {
+        //TODO
+    }
+
     private void validerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_validerBtnActionPerformed
-	boolean accessGranted = tryToConnect();
-	if (accessGranted){
-	    switchToPage(mainContent, jPanel3);
-	    String lastName = user.getNom();
-	    String firstName = user.getPrenom();
-	    lastFirstLabel.setText(lastName + " " + firstName);
-	    switchToPage(jPanel1, userContent);
-	} else {
-	    JOptionPane.showMessageDialog(null,
-	    "Erreur des identifiants",
-	    "ERROR !",
-	    JOptionPane.ERROR_MESSAGE);
-	}
+        boolean accessGranted = tryToConnect();
+        if (accessGranted) {
+            user.runRecvePassive();
+            switchToPage(mainContent, jPanel3);
+            String lastName = user.getNom();
+            String firstName = user.getPrenom();
+            lastFirstLabel.setText(lastName + " " + firstName);
+            creerArbre();
+            //switchToPage(loginPage, userContent);
+            switchToPage(jPanel1, userContent);
+        } else {
+            JOptionPane.showMessageDialog(null,
+                    "Erreur des identifiants",
+                    "ERROR !",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_validerBtnActionPerformed
 
     private void titleFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleFieldActionPerformed
@@ -429,9 +523,9 @@ public class UserInterface extends javax.swing.JFrame {
 
     private void composeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_composeBtnActionPerformed
         titleField.setText("TITRE...");
-	loadGroupBox();
-	writeMsgContentPanel.setText("");
-	switchToPage(mainContent, composerPage);
+        loadGroupBox();
+        writeMsgContentPanel.setText("");
+        switchToPage(mainContent, composerPage);
     }//GEN-LAST:event_composeBtnActionPerformed
 
     private void cancelBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBtnActionPerformed
@@ -440,6 +534,9 @@ public class UserInterface extends javax.swing.JFrame {
 
     private void logoutBtnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_logoutBtnMouseClicked
         // TODO add your handling code here:
+        user.disconnect();
+        sockOk = false;
+        switchToPage(userContent, loginPage);
     }//GEN-LAST:event_logoutBtnMouseClicked
 
     private void userNameFieldMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_userNameFieldMouseClicked
@@ -454,86 +551,90 @@ public class UserInterface extends javax.swing.JFrame {
         titleField.setText("");
     }//GEN-LAST:event_titleFieldMouseClicked
 
-    public void updateTreePane(){
-	
+    public void updateTreePane() {
+
     }
-    
+
     private boolean tryToConnect() {
         String username = userNameField.getText();
         String password = new String(pwdField.getPassword());
-        boolean login;
-        if ((username.compareTo("") == 0) || (password.compareTo("") == 0)) {
-            login = false;
-        } else {
-            login = user.login(password, username);
+        boolean login = false;
+        if ((username.compareTo("") != 0) && (password.compareTo("") != 0)) {
+            if (!sockOk) {
+                user.runConnSocket(2345, "127.0.0.1");
+            }
+            if (user.isSocketOk()) {
+                login = user.login(password, username);
+                sockOk = true;
+            }
         }
         return login;
     }
-    
+
     public void switchToPage(Container src, Component dest) {
-	src.removeAll();
-	src.add(dest);
-	src.repaint();
-	src.revalidate();
+        src.removeAll();
+        src.add(dest);
+        src.repaint();
+        src.revalidate();
     }
-    
+
     private void loadGroupBox() {
-	Set<Group> possDestGroup = user.getListOfGroupsBox();
-	Set<String> possDestGroupNames = new TreeSet<>();
-	for (Group g : possDestGroup){
-	    possDestGroupNames.add(g.getGroupName());
-	}
-	Object[] groups = new Object[possDestGroupNames.size()];
-	int i = 0;
-	for (String g : possDestGroupNames){
-	    groups[i] = (Object)g;
-	    i++;
-	}
-	destGrpChoices.setModel(new DefaultComboBoxModel(groups));
+        Set<Group> possDestGroup = user.getListOfGroupsBox();
+        Set<String> possDestGroupNames = new TreeSet<>();
+        for (Group g : possDestGroup) {
+            possDestGroupNames.add(g.getGroupName());
+        }
+        Object[] groups = new Object[possDestGroupNames.size()];
+        int i = 0;
+        for (String g : possDestGroupNames) {
+            groups[i] = (Object) g;
+            i++;
+        }
+        destGrpChoices.setModel(new DefaultComboBoxModel(groups));
     }
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-	/* Set the Nimbus look and feel */
-	//<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-	/* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-	 */
-	try {
-	    for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-		if ("Nimbus".equals(info.getName())) {
-		    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-		    break;
-		}
-	    }
-	} catch (ClassNotFoundException ex) {
-	    java.util.logging.Logger.getLogger(UserInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-	} catch (InstantiationException ex) {
-	    java.util.logging.Logger.getLogger(UserInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-	} catch (IllegalAccessException ex) {
-	    java.util.logging.Logger.getLogger(UserInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-	} catch (javax.swing.UnsupportedLookAndFeelException ex) {
-	    java.util.logging.Logger.getLogger(UserInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-	}
-	//</editor-fold>
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(UserInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(UserInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(UserInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(UserInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
 
-	/* Create and display the form */
-	java.awt.EventQueue.invokeLater(new Runnable() {
-	    public void run() {
-		new UserInterface().setVisible(true);
-	    }
-	});
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new UserInterface().setVisible(true);
+            }
+        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTree arbre;
     private javax.swing.JButton cancelBtn;
     private javax.swing.JButton composeBtn;
     private javax.swing.JPanel composerPage;
     private javax.swing.JComboBox<String> destGrpChoices;
     private javax.swing.JButton envoyerBtn;
-    private javax.swing.JTree grpAndTickets;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JEditorPane jEditorPane2;

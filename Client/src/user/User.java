@@ -292,7 +292,7 @@ public class User {
         date = getWriteDate();
         this.idTicket = idTicket;
         this.idGroup = idGroup;
-        return "3000/" + idTicket + "/" + msg + "/" + date;
+        return "3000/" + idTicket + "/" + msg + "/" + date+"/"+idGroup;
     }
 
     public String createTicket(String idGroupe, String titleOfTicket, String contenue) {
@@ -338,6 +338,7 @@ public class User {
 
     public synchronized void addListOfTickets(Set<Ticket> listOfTicket) {
         this.listOfTickets = listOfTicket;
+        ui.ajouterTicketDansArbre(listOfTicket);
         ticketRecu = true;
     }
     
@@ -359,6 +360,7 @@ public class User {
                         }else {
                             sendRequest(requestGetGroup());
                         }
+                        notifHere = false;
                     }
                 }
             }
@@ -366,4 +368,30 @@ public class User {
         
         update.start();
     }
+    
+    //trouve le ticket selectionné et mes ses msg non lu à 0 et retourn le resultat des msg non lu
+    //avant mise à 0
+    public synchronized int calculeNbMsgNonLu() {
+        int res = 0;
+        for(Ticket t : listOfTickets) {
+            if (t.getIdTicket().compareTo(idTicket) == 0) {
+                res = t.getNbUnreadMsg();
+                t.setNbUnreadMsg(0);
+                return res;
+            }
+        }
+        return res;
+    }
+    
+    //modifie le nombre de message non lu du group en fonction des tickets lu 
+    public synchronized int modifierNbGrpNonLu(int newNbGrpNonLu) {
+        for(Group g : listOfGroups) {
+            if (g.getGroupName().compareTo(idGroup) == 0) {
+                int i = g.getNbUnreadMsg();
+                g.setNbUnreadMsg(i - newNbGrpNonLu);
+                return g.getNbUnreadMsg();
+            }
+        }
+        return 0;
+    } 
 }

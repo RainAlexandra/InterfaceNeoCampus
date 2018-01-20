@@ -151,6 +151,7 @@ public class ClientsServerSocketInit {
         if (!idTicket.equals("")) {
             toSend[0] = "5100"; //ici on repond en plus de ok on return l'id du nouveau ticket crréé
             toSend[1] = idTicket;
+            toSend[2] = idGroup;
         } else {
             toSend[0] = "0000";
             toSend[1] = "ERRER_TICKET_CREAT";
@@ -166,6 +167,7 @@ public class ClientsServerSocketInit {
         String idTicket = msg.getIdTicket();
         String contenue = msg.getContenue();
         String date = msg.getDateOfMsg();
+        String idGroup = msg.getGroupFromAnswar();
         String[] toSend = new String[3];
         String[] notif = new String[3];
         Set<String> userId;
@@ -174,7 +176,8 @@ public class ClientsServerSocketInit {
             toSend[0] = "5200"; // ici on repond just par un ok
             toSend[1] = "MESSAGE_OK";
             notif[0] = "1000";
-            notif[1] = "NOTIF_RECU";
+            notif[1] = idClient;
+            notif[2] = idGroup;
             Object[] user = userConnect(userId); // recupère seulemnt ceux qui sont connecter 
             sendNotification(notif, user); //on enoie la notification à tout le monde 
         } else {//erreur null pointer exception
