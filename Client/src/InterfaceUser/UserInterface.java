@@ -11,6 +11,7 @@ import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
@@ -29,12 +30,15 @@ public class UserInterface extends javax.swing.JFrame {
     private boolean sockOk = false;
     private DefaultTreeModel groupMmodel;
     private String root = "Racine";
-    DefaultMutableTreeNode racine;
+    private DefaultMutableTreeNode racine;
+    private DefaultTreeCellRenderer renderer;
+
     /**
      * Creates new form UserInterface
      */
     public UserInterface() {
         user = new User(this);
+        renderer = new DefaultTreeCellRenderer();
         initComponents();
     }
 
@@ -449,7 +453,7 @@ public class UserInterface extends javax.swing.JFrame {
     }
 
     private void creerArbre() {
-        racine = new DefaultMutableTreeNode("Racine");
+        racine = new DefaultMutableTreeNode(root);
         Set<Group> group = user.getListOfGroup();
         //Nous allons ajouter des branches et des feuilles à notre racine
 
@@ -465,6 +469,7 @@ public class UserInterface extends javax.swing.JFrame {
         }
 
         groupMmodel = new DefaultTreeModel(racine, true);
+        
         arbre.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent event) {
                 DefaultMutableTreeNode nodeSelected;
@@ -476,9 +481,11 @@ public class UserInterface extends javax.swing.JFrame {
                     } else { //action pour la selection de ticket
                         spl = nodeSelected.toString().split("-");
                         String [] spl1 = nodeSelected.getParent().toString().split("-");
+                        System.out.println("parent : "+spl1[0]);
                         user.sendRequest(user.requestGetMsg(spl[0], spl1[0]));
                         //on modifie le nombre de mesg lu;
-                        int i = 0;
+                        int i = 3;
+                        System.out.println("parent : "+nodeSelected.getUserObject().toString());
                         if ((i=user.modifierNbGrpNonLu(user.calculeNbMsgNonLu())) > 0) {
                             nodeSelected.setUserObject(spl1+"-("+i+")");
                             groupMmodel.reload();
@@ -487,6 +494,7 @@ public class UserInterface extends javax.swing.JFrame {
                 }
             }
         });
+        
         arbre.setModel(groupMmodel);
     }
 
