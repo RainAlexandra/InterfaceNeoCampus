@@ -6,6 +6,7 @@ import java.awt.Container;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
@@ -17,6 +18,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import user.Group;
+import user.Message;
 import user.Ticket;
 import user.User;
 
@@ -81,13 +83,18 @@ public class UserInterface extends javax.swing.JFrame {
         jEditorPane2 = new javax.swing.JEditorPane();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jScrollPane4 = new javax.swing.JScrollPane();
+        messageList = new javax.swing.JScrollPane();
         msgStatuses = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         namesAndStatusesPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("PROJET S5 - NeoCampus");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setLayout(new java.awt.CardLayout());
 
@@ -337,25 +344,22 @@ public class UserInterface extends javax.swing.JFrame {
 
         jButton2.setText("EFFACER");
 
-        jScrollPane4.setBackground(new java.awt.Color(255, 255, 255));
-        jScrollPane4.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
         javax.swing.GroupLayout ticketMsgViewLayout = new javax.swing.GroupLayout(ticketMsgView);
         ticketMsgView.setLayout(ticketMsgViewLayout);
         ticketMsgViewLayout.setHorizontalGroup(
             ticketMsgViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane3)
             .addGroup(ticketMsgViewLayout.createSequentialGroup()
-                .addGap(0, 239, Short.MAX_VALUE)
+                .addGap(0, 225, Short.MAX_VALUE)
                 .addComponent(jButton2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButton1))
-            .addComponent(jScrollPane4)
+            .addComponent(messageList)
         );
         ticketMsgViewLayout.setVerticalGroup(
             ticketMsgViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ticketMsgViewLayout.createSequentialGroup()
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
+                .addComponent(messageList, javax.swing.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -559,6 +563,10 @@ public class UserInterface extends javax.swing.JFrame {
         titleField.setText("");
     }//GEN-LAST:event_titleFieldMouseClicked
 
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+    }//GEN-LAST:event_formWindowClosing
+
     public void updateTreePane() {
 
     }
@@ -599,6 +607,14 @@ public class UserInterface extends javax.swing.JFrame {
             i++;
         }
         destGrpChoices.setModel(new DefaultComboBoxModel(groups));
+    }
+    
+    public void loadMsg(Set<Message> listOfMsg) {
+        DefaultListModel<Message> lm = new DefaultListModel<>();
+        for (Message m : listOfMsg) {
+            lm.addElement(m);
+        }
+        messageList.setModel()
     }
 
     /**
@@ -656,11 +672,11 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JLabel lastFirstLabel;
     private javax.swing.JPanel loginPage;
     private javax.swing.JLabel logoutBtn;
     private javax.swing.JPanel mainContent;
+    private javax.swing.JScrollPane messageList;
     private javax.swing.JPanel msgStatuses;
     private javax.swing.JPanel namesAndStatusesPanel;
     private javax.swing.JPasswordField pwdField;
