@@ -16,7 +16,7 @@ public class MainClient {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        User u = new User();
+        User u = new User(new UserInterface());
         u.runConnSocket(2345, "127.0.0.1"); // demarrage de la socket
         u.login("a1i1s1d149", "ai1008sd");
         boolean continuer = true;

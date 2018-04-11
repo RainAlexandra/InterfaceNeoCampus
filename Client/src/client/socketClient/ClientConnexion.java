@@ -136,6 +136,8 @@ public class ClientConnexion {
                                     break;
                                 case 1:
                                     notification = reponse;
+                                    user.setIdTicketNotif(notification[1]);
+                                    user.setIdGroupNotif(notification[2]);
                                     user.setNotifHere(true);
                                     break;
                                 case 2:
@@ -200,6 +202,7 @@ public class ClientConnexion {
         for (int i = 1; i < ticket.length; i++) {
             tck = ticket[i].split("/");
             tickets.add(new Ticket(tck[0], tck[1], Integer.parseInt(tck[2])));
+            System.out.println(tck[1]);
         }
         return tickets;
     }

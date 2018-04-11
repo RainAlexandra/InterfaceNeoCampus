@@ -5,11 +5,13 @@
  */
 package user;
 
+import InterfaceUser.UserInterface;
 import java.util.Set;
 import java.util.TreeSet;
 import client.socketClient.*;
 import java.sql.Timestamp;
 import java.util.HashSet;
+import java.util.concurrent.Semaphore;
 
 /**
  *
@@ -36,6 +38,8 @@ public class User {
     private String idGroup = ""; //l'id du group selectionné
     private String idTicket = ""; //id du ticket selectionné
     private String titleOfTicket = "";
+    private String idGroupNotif = "";
+    private String idTicketNotif = "";
 
     //des ensemble contenat les groupe les tickets et les message en fonction d'une selection 
     private Set<Group> listOfGroups = new TreeSet<>();
@@ -45,7 +49,12 @@ public class User {
 
     private ClientConnexion conn = null;
 
-    public User() {
+    private Semaphore sem;
+    private UserInterface ui;
+    
+    public User(UserInterface ui) {
+        sem = new Semaphore(1, true);
+        this.ui = ui;
     }
 
     public void runConnSocket(int port, String host) {
@@ -66,6 +75,13 @@ public class User {
         return noMilli[0];
     }
     
+    public void setIdGroupNotif(String grpN){
+        this.idGroupNotif = grpN;
+    }
+    
+    public void setIdTicketNotif(String idTicketNotif) {
+        this.idTicketNotif = idTicketNotif;
+    }
     
     public synchronized boolean isGrpRecu() {
         return grpRecu;
@@ -276,7 +292,7 @@ public class User {
         date = getWriteDate();
         this.idTicket = idTicket;
         this.idGroup = idGroup;
-        return "3000/" + idTicket + "/" + msg + "/" + date;
+        return "3000/" + idTicket + "/" + msg + "/" + date+"/"+idGroup;
     }
 
     public String createTicket(String idGroupe, String titleOfTicket, String contenue) {
@@ -322,7 +338,60 @@ public class User {
 
     public synchronized void addListOfTickets(Set<Ticket> listOfTicket) {
         this.listOfTickets = listOfTicket;
+        ui.ajouterTicketDansArbre(listOfTicket);
         ticketRecu = true;
     }
     
+    
+    //cette fonction est applée que si le user est connecter
+    public void updateNotification() {
+        Thread update = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isConnect) { 
+                    if (notifHere) {
+                        if(idGroup.compareTo(idGroupNotif) == 0) {
+                            if(idTicket.compareTo(idTicketNotif) == 0) { //je met à jour les mssage
+                                //demande de mis à jour des message
+                                sendRequest(requestGetMsg(idTicket, idGroup));
+                            }else { //je demande les tickets 
+                                sendRequest(requestGetTicket(idGroup));
+                            }
+                        }else {
+                            sendRequest(requestGetGroup());
+                        }
+                        notifHere = false;
+                    }
+                }
+            }
+        });
+        
+        update.start();
+    }
+    
+    //trouve le ticket selectionné et mes ses msg non lu à 0 et retourn le resultat des msg non lu
+    //avant mise à 0
+    public synchronized int calculeNbMsgNonLu() {
+        int res = 0;
+        for(Ticket t : listOfTickets) {
+            if (t.getIdTicket().compareTo(idTicket) == 0) {
+                res = t.getNbUnreadMsg();
+                t.setNbUnreadMsg(0);
+                return res;
+            }
+        }
+        return res;
+    }
+    
+    //modifie le nombre de message non lu du group en fonction des tickets lu 
+    public synchronized int modifierNbGrpNonLu(int newNbGrpNonLu) {
+        for(Group g : listOfGroups) {
+            if (g.getGroupName().compareTo(idGroup) == 0) {
+                int i = g.getNbUnreadMsg();
+                g.setNbUnreadMsg(i - newNbGrpNonLu);
+                return g.getNbUnreadMsg();
+            }
+        }
+        return 0;
+    } 
 }

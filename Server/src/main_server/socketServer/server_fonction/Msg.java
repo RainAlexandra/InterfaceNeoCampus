@@ -92,6 +92,10 @@ public class Msg {
     public String getContenuDuTcket() {
         return infos[3];
     }
+    
+    public String getGroupFromAnswar() {
+        return infos[4];
+    }
     // si c'est le moment de la demande de connxion on va devoir extraire le mot de
     // passe
     // et l'identifiant une fois justifier il va falloire les mettre à jour
